@@ -2,277 +2,600 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>UberControl - Gerenciamento Financeiro</title>
+    <meta name="theme-color" content="#0f0f1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>UberControl - Controle Financeiro para Motoristas</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <h1 class="logo">UberControl</h1>
-            <p class="subtitle">Gerenciamento Financeiro para Motoristas</p>
+    <div class="app">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <span class="logo-icon">🚗</span>
+                    <div class="logo-text">
+                        <h1>UberControl</h1>
+                        <span class="tagline">Seu dinheiro sob controle</span>
+                    </div>
+                </div>
+                <button class="btn-settings" id="btnSettings" title="Configurações">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
         </header>
 
-        <main class="main-content">
-            <section class="dashboard">
-                <h2 class="section-title">Dashboard</h2>
-                <div class="kpi-grid">
-                    <div class="kpi-card kpi-earnings">
-                        <span class="kpi-icon">💰</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Ganhos Totais</span>
-                            <span class="kpi-value" id="totalEarnings">R$ 0,00</span>
+        <main class="app-content">
+            <div class="tab-content active" id="tabDashboard">
+                <section class="quick-stats">
+                    <div class="stat-card primary">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Líquido Hoje</span>
+                            <span class="stat-value" id="todayNet">R$ 0,00</span>
                         </div>
                     </div>
-                    <div class="kpi-card kpi-expenses">
-                        <span class="kpi-icon">📉</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Gastos Totais</span>
-                            <span class="kpi-value" id="totalExpenses">R$ 0,00</span>
+                    <div class="stat-card success">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Ganhos Hoje</span>
+                            <span class="stat-value" id="todayEarnings">R$ 0,00</span>
                         </div>
                     </div>
-                    <div class="kpi-card kpi-profit">
-                        <span class="kpi-icon">📊</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Ganho Líquido</span>
-                            <span class="kpi-value" id="netProfit">R$ 0,00</span>
+                    <div class="stat-card danger">
+                        <div class="stat-icon">📉</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Gastos Hoje</span>
+                            <span class="stat-value" id="todayExpenses">R$ 0,00</span>
                         </div>
                     </div>
-                    <div class="kpi-card kpi-average">
-                        <span class="kpi-icon">📅</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Média Diária</span>
-                            <span class="kpi-value" id="dailyAverage">R$ 0,00</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-weekly">
-                        <span class="kpi-icon">📆</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Média Semanal</span>
-                            <span class="kpi-value" id="weeklyAverage">R$ 0,00</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-transactions">
-                        <span class="kpi-icon">📝</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Total Transações</span>
-                            <span class="kpi-value" id="totalTransactions">0</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-km">
-                        <span class="kpi-icon">🚗</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Total KM Rodados</span>
-                            <span class="kpi-value" id="totalKm">0 km</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-cost-km">
-                        <span class="kpi-icon">⛽</span>
-                        <div class="kpi-info">
-                            <span class="kpi-label">Custo por KM</span>
-                            <span class="kpi-value" id="costPerKm">R$ 0,00</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="goal-section">
-                <div class="goal-card">
+                <section class="goal-tracker">
                     <div class="goal-header">
-                        <span class="goal-icon">🎯</span>
-                        <h3>Meta Diária</h3>
-                        <button class="btn-config" id="btnConfigGoal" title="Configurar Meta">⚙️</button>
-                    </div>
-                    <div class="goal-content">
-                        <div class="goal-info">
-                            <span class="goal-label">Meta de Ganho Líquido</span>
-                            <span class="goal-value" id="dailyGoal">R$ 0,00</span>
+                        <div class="goal-title">
+                            <span class="goal-icon">🎯</span>
+                            <span>Meta Diária</span>
                         </div>
-                        <div class="goal-progress">
+                        <button class="btn-edit-goal" id="btnEditGoal">Editar</button>
+                    </div>
+                    <div class="goal-progress-container">
+                        <div class="goal-amounts">
+                            <span class="goal-current" id="goalCurrent">R$ 0,00</span>
+                            <span class="goal-target">de <span id="goalTarget">R$ 0,00</span></span>
+                        </div>
+                        <div class="progress-bar-wrapper">
                             <div class="progress-bar">
-                                <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+                                <div class="progress-fill" id="goalProgressBar"></div>
                             </div>
-                            <span class="progress-text" id="goalProgressText">0% da meta</span>
+                            <span class="progress-percent" id="goalPercent">0%</span>
                         </div>
-                        <div class="goal-remaining">
-                            <span class="remaining-label">Falta para atingir a meta hoje:</span>
-                            <span class="remaining-value" id="goalRemaining">R$ 0,00</span>
+                        <div class="goal-remaining-info">
+                            <span id="goalStatus">Configure sua meta diária</span>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="actions">
-                <button class="btn btn-earning" id="btnAddEarning">
-                    <span class="btn-icon">+</span>
-                    Adicionar Ganho
-                </button>
-                <button class="btn btn-expense" id="btnAddExpense">
-                    <span class="btn-icon">-</span>
-                    Adicionar Gasto
-                </button>
-            </section>
-
-            <section class="transactions-section">
-                <div class="transactions-header">
-                    <h2 class="section-title">Transações</h2>
-                    <div class="filters">
-                        <select id="filterType" class="filter-select">
-                            <option value="all">Todos</option>
-                            <option value="earning">Ganhos</option>
-                            <option value="expense">Gastos</option>
-                        </select>
-                        <select id="sortBy" class="filter-select">
-                            <option value="date-desc">Data (Recente)</option>
-                            <option value="date-asc">Data (Antiga)</option>
-                            <option value="value-desc">Valor (Maior)</option>
-                            <option value="value-asc">Valor (Menor)</option>
-                        </select>
+                <section class="work-summary">
+                    <h3 class="section-title">Resumo do Trabalho</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-icon">⏱️</span>
+                            <div class="summary-data">
+                                <span class="summary-value" id="hoursWorked">0h</span>
+                                <span class="summary-label">Horas Hoje</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-icon">💵</span>
+                            <div class="summary-data">
+                                <span class="summary-value" id="hourlyRate">R$ 0,00</span>
+                                <span class="summary-label">Por Hora</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-icon">🚗</span>
+                            <div class="summary-data">
+                                <span class="summary-value" id="totalKmToday">0 km</span>
+                                <span class="summary-label">Rodados Hoje</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-icon">⛽</span>
+                            <div class="summary-data">
+                                <span class="summary-value" id="kmPerReal">0 km</span>
+                                <span class="summary-label">Por Real Gasto</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="table-container">
-                    <table class="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Categoria</th>
-                                <th>Valor</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsBody">
-                        </tbody>
-                    </table>
+                </section>
+
+                <section class="period-stats">
+                    <h3 class="section-title">Estatísticas do Período</h3>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week">Semana</button>
+                        <button class="period-btn" data-period="month">Mês</button>
+                        <button class="period-btn" data-period="all">Total</button>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon success">💰</span>
+                                <span class="stats-title">Ganhos</span>
+                            </div>
+                            <span class="stats-value success" id="periodEarnings">R$ 0,00</span>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon danger">💸</span>
+                                <span class="stats-title">Gastos</span>
+                            </div>
+                            <span class="stats-value danger" id="periodExpenses">R$ 0,00</span>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon primary">📊</span>
+                                <span class="stats-title">Líquido</span>
+                            </div>
+                            <span class="stats-value primary" id="periodNet">R$ 0,00</span>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon warning">📅</span>
+                                <span class="stats-title">Média/Dia</span>
+                            </div>
+                            <span class="stats-value warning" id="periodAverage">R$ 0,00</span>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon info">🚗</span>
+                                <span class="stats-title">Total KM</span>
+                            </div>
+                            <span class="stats-value info" id="periodKm">0 km</span>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-header">
+                                <span class="stats-icon purple">📝</span>
+                                <span class="stats-title">Corridas</span>
+                            </div>
+                            <span class="stats-value purple" id="periodTrips">0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="tab-content" id="tabReports">
+                <section class="chart-section">
+                    <h3 class="section-title">Ganhos por Aplicativo</h3>
+                    <div class="chart-container">
+                        <canvas id="appChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="chart-section">
+                    <h3 class="section-title">Gastos por Categoria</h3>
+                    <div class="chart-container">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="chart-section">
+                    <h3 class="section-title">Evolução Semanal</h3>
+                    <div class="chart-container chart-large">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="chart-section">
+                    <h3 class="section-title">Desempenho por Dia da Semana</h3>
+                    <div class="chart-container">
+                        <canvas id="weekdayChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <div class="tab-content" id="tabHistory">
+                <section class="history-section">
+                    <div class="history-header">
+                        <h3 class="section-title">Histórico de Transações</h3>
+                        <div class="history-filters">
+                            <select id="filterType" class="filter-select">
+                                <option value="all">Todos</option>
+                                <option value="earning">Ganhos</option>
+                                <option value="expense">Gastos</option>
+                            </select>
+                            <select id="filterPeriod" class="filter-select">
+                                <option value="all">Todo período</option>
+                                <option value="today">Hoje</option>
+                                <option value="week">Esta semana</option>
+                                <option value="month">Este mês</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="transactions-list" id="transactionsList">
+                    </div>
+                    
                     <div class="empty-state" id="emptyState">
-                        <span class="empty-icon">📋</span>
-                        <p>Nenhuma transação registrada</p>
-                        <p class="empty-hint">Comece adicionando seus ganhos e gastos</p>
+                        <div class="empty-icon">📋</div>
+                        <p class="empty-title">Nenhuma transação encontrada</p>
+                        <p class="empty-text">Comece registrando seus ganhos e gastos</p>
                     </div>
-                </div>
-                <div class="pagination" id="pagination">
-                    <button class="btn-page" id="prevPage" disabled>Anterior</button>
-                    <span class="page-info" id="pageInfo">Página 1 de 1</span>
-                    <button class="btn-page" id="nextPage" disabled>Próximo</button>
-                </div>
-            </section>
+
+                    <div class="pagination" id="pagination">
+                        <button class="btn-page" id="prevPage">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <span class="page-info" id="pageInfo">1 / 1</span>
+                        <button class="btn-page" id="nextPage">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </section>
+            </div>
         </main>
 
-        <div class="modal-overlay" id="earningModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3>Adicionar Ganho</h3>
-                    <button class="modal-close" id="closeEarningModal">&times;</button>
-                </div>
-                <form id="earningForm" class="modal-form">
-                    <div class="form-group">
-                        <label for="earningValue">Valor (R$)</label>
+        <div class="floating-actions">
+            <button class="fab fab-expense" id="btnAddExpense" title="Adicionar Gasto">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+            <button class="fab fab-earning" id="btnAddEarning" title="Adicionar Ganho">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-tab="tabDashboard">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Início</span>
+            </button>
+            <button class="nav-item" data-tab="tabReports">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Relatórios</span>
+            </button>
+            <button class="nav-item" data-tab="tabHistory">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Histórico</span>
+            </button>
+        </nav>
+    </div>
+
+    <div class="modal-overlay" id="earningModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Registrar Ganho</h3>
+                <button class="modal-close" id="closeEarningModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="earningForm" class="modal-form">
+                <div class="form-group">
+                    <label for="earningValue">Valor recebido</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">R$</span>
                         <input type="number" id="earningValue" step="0.01" min="0" placeholder="0,00" required>
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="earningDate">Data</label>
                         <input type="date" id="earningDate" required>
                     </div>
                     <div class="form-group">
-                        <label for="earningCategory">Tipo de Corrida/App</label>
-                        <select id="earningCategory" required>
-                            <option value="">Selecione...</option>
-                            <option value="uber">Uber</option>
-                            <option value="uber-eats">Uber Eats</option>
-                            <option value="99">99</option>
-                            <option value="indriver">InDriver</option>
-                            <option value="particular">Particular</option>
-                            <option value="outro">Outro</option>
-                        </select>
+                        <label for="earningTime">Hora início</label>
+                        <input type="time" id="earningTime">
                     </div>
-                    <div class="form-group">
-                        <label for="earningKm">Quilometragem (opcional)</label>
-                        <input type="number" id="earningKm" step="0.1" min="0" placeholder="km rodados...">
-                    </div>
-                    <div class="form-group">
-                        <label for="earningDescription">Descrição (opcional)</label>
-                        <input type="text" id="earningDescription" placeholder="Descrição...">
-                    </div>
-                    <button type="submit" class="btn btn-submit btn-earning">Salvar Ganho</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="expenseModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3>Adicionar Gasto</h3>
-                    <button class="modal-close" id="closeExpenseModal">&times;</button>
                 </div>
-                <form id="expenseForm" class="modal-form">
+                <div class="form-group">
+                    <label for="earningCategory">Aplicativo</label>
+                    <div class="app-selector">
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="uber" required>
+                            <span class="app-badge uber">Uber</span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="uber-eats">
+                            <span class="app-badge uber-eats">Uber Eats</span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="99">
+                            <span class="app-badge ninety-nine">99</span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="indriver">
+                            <span class="app-badge indriver">InDriver</span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="particular">
+                            <span class="app-badge particular">Particular</span>
+                        </label>
+                        <label class="app-option">
+                            <input type="radio" name="earningCategory" value="outro">
+                            <span class="app-badge outro">Outro</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="expenseValue">Valor (R$)</label>
+                        <label for="earningKm">KM rodados</label>
+                        <div class="input-with-suffix">
+                            <input type="number" id="earningKm" step="0.1" min="0" placeholder="0">
+                            <span class="input-suffix">km</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="earningHours">Horas trabalhadas</label>
+                        <div class="input-with-suffix">
+                            <input type="number" id="earningHours" step="0.5" min="0" placeholder="0">
+                            <span class="input-suffix">h</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="earningDescription">Observação (opcional)</label>
+                    <input type="text" id="earningDescription" placeholder="Ex: Corrida longa, gorjeta...">
+                </div>
+                <button type="submit" class="btn-submit btn-success">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Salvar Ganho
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Registrar Gasto</h3>
+                <button class="modal-close" id="closeExpenseModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="expenseForm" class="modal-form">
+                <div class="form-group">
+                    <label for="expenseValue">Valor gasto</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">R$</span>
                         <input type="number" id="expenseValue" step="0.01" min="0" placeholder="0,00" required>
                     </div>
-                    <div class="form-group">
-                        <label for="expenseDate">Data</label>
-                        <input type="date" id="expenseDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="expenseCategory">Categoria</label>
-                        <select id="expenseCategory" required>
-                            <option value="">Selecione...</option>
-                            <option value="gasolina">Gasolina</option>
-                            <option value="etanol">Etanol</option>
-                            <option value="manutencao">Manutenção</option>
-                            <option value="lavagem">Lavagem</option>
-                            <option value="estacionamento">Estacionamento</option>
-                            <option value="pedagio">Pedágio</option>
-                            <option value="lanche">Lanche/Alimentação</option>
-                            <option value="taxa-app">Taxa do App</option>
-                            <option value="seguro">Seguro</option>
-                            <option value="multa">Multa</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="expenseDescription">Descrição (opcional)</label>
-                        <input type="text" id="expenseDescription" placeholder="Descrição...">
-                    </div>
-                    <button type="submit" class="btn btn-submit btn-expense">Salvar Gasto</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="goalModal">
-            <div class="modal modal-small">
-                <div class="modal-header">
-                    <h3>Configurar Meta Diária</h3>
-                    <button class="modal-close" id="closeGoalModal">&times;</button>
                 </div>
-                <form id="goalForm" class="modal-form">
-                    <div class="form-group">
-                        <label for="goalValue">Meta de Ganho Líquido Diário (R$)</label>
+                <div class="form-group">
+                    <label for="expenseDate">Data</label>
+                    <input type="date" id="expenseDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <div class="category-grid">
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="gasolina" required>
+                            <span class="category-badge">
+                                <span class="category-icon">⛽</span>
+                                <span>Gasolina</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="etanol">
+                            <span class="category-badge">
+                                <span class="category-icon">🌿</span>
+                                <span>Etanol</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="manutencao">
+                            <span class="category-badge">
+                                <span class="category-icon">🔧</span>
+                                <span>Manutenção</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="lavagem">
+                            <span class="category-badge">
+                                <span class="category-icon">🚿</span>
+                                <span>Lavagem</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="estacionamento">
+                            <span class="category-badge">
+                                <span class="category-icon">🅿️</span>
+                                <span>Estacionamento</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="pedagio">
+                            <span class="category-badge">
+                                <span class="category-icon">🛣️</span>
+                                <span>Pedágio</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="lanche">
+                            <span class="category-badge">
+                                <span class="category-icon">🍔</span>
+                                <span>Alimentação</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="taxa-app">
+                            <span class="category-badge">
+                                <span class="category-icon">📱</span>
+                                <span>Taxa App</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="seguro">
+                            <span class="category-badge">
+                                <span class="category-icon">🛡️</span>
+                                <span>Seguro</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="multa">
+                            <span class="category-badge">
+                                <span class="category-icon">🚨</span>
+                                <span>Multa</span>
+                            </span>
+                        </label>
+                        <label class="category-option">
+                            <input type="radio" name="expenseCategory" value="outro">
+                            <span class="category-badge">
+                                <span class="category-icon">📦</span>
+                                <span>Outro</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expenseDescription">Observação (opcional)</label>
+                    <input type="text" id="expenseDescription" placeholder="Ex: Troca de óleo, abastecimento...">
+                </div>
+                <button type="submit" class="btn-submit btn-danger">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Salvar Gasto
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="goalModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Meta Diária</h3>
+                <button class="modal-close" id="closeGoalModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="goalForm" class="modal-form">
+                <div class="form-group">
+                    <label for="goalValue">Quanto quer ganhar líquido por dia?</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">R$</span>
                         <input type="number" id="goalValue" step="0.01" min="0" placeholder="200,00" required>
                     </div>
-                    <button type="submit" class="btn btn-submit btn-goal">Salvar Meta</button>
-                </form>
-            </div>
+                </div>
+                <p class="form-hint">Essa meta será usada para calcular seu progresso diário.</p>
+                <button type="submit" class="btn-submit btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Salvar Meta
+                </button>
+            </form>
         </div>
+    </div>
 
-        <div class="modal-overlay" id="deleteModal">
-            <div class="modal modal-small">
-                <div class="modal-header">
-                    <h3>Confirmar Exclusão</h3>
-                    <button class="modal-close" id="closeDeleteModal">&times;</button>
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Configurações</h3>
+                <button class="modal-close" id="closeSettingsModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-form">
+                <div class="settings-section">
+                    <h4>Dados</h4>
+                    <button class="btn-setting btn-export" id="btnExport">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Exportar Dados
+                    </button>
+                    <button class="btn-setting btn-import" id="btnImport">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Importar Dados
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <button class="btn-setting btn-clear" id="btnClearData">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Limpar Todos os Dados
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <p>Tem certeza que deseja excluir esta transação?</p>
-                    <div class="modal-actions">
-                        <button class="btn btn-cancel" id="cancelDelete">Cancelar</button>
-                        <button class="btn btn-delete" id="confirmDelete">Excluir</button>
-                    </div>
+                <div class="settings-section">
+                    <h4>Sobre</h4>
+                    <p class="about-text">UberControl v2.0</p>
+                    <p class="about-text">Desenvolvido para motoristas de app</p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Excluir Transação</h3>
+                <button class="modal-close" id="closeDeleteModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
+                <div class="modal-actions">
+                    <button class="btn-action btn-cancel" id="cancelDelete">Cancelar</button>
+                    <button class="btn-action btn-delete" id="confirmDelete">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message"></span>
     </div>
 
     <script src="script.js"></script>
