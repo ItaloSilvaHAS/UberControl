@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>UberControl - Gerenciamento Financeiro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1 class="logo">UberControl</h1>
+            <p class="subtitle">Gerenciamento Financeiro para Motoristas</p>
+        </header>
+
+        <main class="main-content">
+            <section class="dashboard">
+                <h2 class="section-title">Dashboard</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-earnings">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Ganhos Totais</span>
+                            <span class="kpi-value" id="totalEarnings">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-expenses">
+                        <span class="kpi-icon">📉</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Gastos Totais</span>
+                            <span class="kpi-value" id="totalExpenses">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-profit">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Ganho Líquido</span>
+                            <span class="kpi-value" id="netProfit">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-average">
+                        <span class="kpi-icon">📅</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Média Diária</span>
+                            <span class="kpi-value" id="dailyAverage">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-weekly">
+                        <span class="kpi-icon">📆</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Média Semanal</span>
+                            <span class="kpi-value" id="weeklyAverage">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-transactions">
+                        <span class="kpi-icon">📝</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Total Transações</span>
+                            <span class="kpi-value" id="totalTransactions">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-km">
+                        <span class="kpi-icon">🚗</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Total KM Rodados</span>
+                            <span class="kpi-value" id="totalKm">0 km</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-cost-km">
+                        <span class="kpi-icon">⛽</span>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Custo por KM</span>
+                            <span class="kpi-value" id="costPerKm">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="goal-section">
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <span class="goal-icon">🎯</span>
+                        <h3>Meta Diária</h3>
+                        <button class="btn-config" id="btnConfigGoal" title="Configurar Meta">⚙️</button>
+                    </div>
+                    <div class="goal-content">
+                        <div class="goal-info">
+                            <span class="goal-label">Meta de Ganho Líquido</span>
+                            <span class="goal-value" id="dailyGoal">R$ 0,00</span>
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text" id="goalProgressText">0% da meta</span>
+                        </div>
+                        <div class="goal-remaining">
+                            <span class="remaining-label">Falta para atingir a meta hoje:</span>
+                            <span class="remaining-value" id="goalRemaining">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="actions">
+                <button class="btn btn-earning" id="btnAddEarning">
+                    <span class="btn-icon">+</span>
+                    Adicionar Ganho
+                </button>
+                <button class="btn btn-expense" id="btnAddExpense">
+                    <span class="btn-icon">-</span>
+                    Adicionar Gasto
+                </button>
+            </section>
+
+            <section class="transactions-section">
+                <div class="transactions-header">
+                    <h2 class="section-title">Transações</h2>
+                    <div class="filters">
+                        <select id="filterType" class="filter-select">
+                            <option value="all">Todos</option>
+                            <option value="earning">Ganhos</option>
+                            <option value="expense">Gastos</option>
+                        </select>
+                        <select id="sortBy" class="filter-select">
+                            <option value="date-desc">Data (Recente)</option>
+                            <option value="date-asc">Data (Antiga)</option>
+                            <option value="value-desc">Valor (Maior)</option>
+                            <option value="value-asc">Valor (Menor)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                        </tbody>
+                    </table>
+                    <div class="empty-state" id="emptyState">
+                        <span class="empty-icon">📋</span>
+                        <p>Nenhuma transação registrada</p>
+                        <p class="empty-hint">Comece adicionando seus ganhos e gastos</p>
+                    </div>
+                </div>
+                <div class="pagination" id="pagination">
+                    <button class="btn-page" id="prevPage" disabled>Anterior</button>
+                    <span class="page-info" id="pageInfo">Página 1 de 1</span>
+                    <button class="btn-page" id="nextPage" disabled>Próximo</button>
+                </div>
+            </section>
+        </main>
+
+        <div class="modal-overlay" id="earningModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Adicionar Ganho</h3>
+                    <button class="modal-close" id="closeEarningModal">&times;</button>
+                </div>
+                <form id="earningForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="earningValue">Valor (R$)</label>
+                        <input type="number" id="earningValue" step="0.01" min="0" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="earningDate">Data</label>
+                        <input type="date" id="earningDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="earningCategory">Tipo de Corrida/App</label>
+                        <select id="earningCategory" required>
+                            <option value="">Selecione...</option>
+                            <option value="uber">Uber</option>
+                            <option value="uber-eats">Uber Eats</option>
+                            <option value="99">99</option>
+                            <option value="indriver">InDriver</option>
+                            <option value="particular">Particular</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="earningKm">Quilometragem (opcional)</label>
+                        <input type="number" id="earningKm" step="0.1" min="0" placeholder="km rodados...">
+                    </div>
+                    <div class="form-group">
+                        <label for="earningDescription">Descrição (opcional)</label>
+                        <input type="text" id="earningDescription" placeholder="Descrição...">
+                    </div>
+                    <button type="submit" class="btn btn-submit btn-earning">Salvar Ganho</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="expenseModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Adicionar Gasto</h3>
+                    <button class="modal-close" id="closeExpenseModal">&times;</button>
+                </div>
+                <form id="expenseForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="expenseValue">Valor (R$)</label>
+                        <input type="number" id="expenseValue" step="0.01" min="0" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDate">Data</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseCategory">Categoria</label>
+                        <select id="expenseCategory" required>
+                            <option value="">Selecione...</option>
+                            <option value="gasolina">Gasolina</option>
+                            <option value="etanol">Etanol</option>
+                            <option value="manutencao">Manutenção</option>
+                            <option value="lavagem">Lavagem</option>
+                            <option value="estacionamento">Estacionamento</option>
+                            <option value="pedagio">Pedágio</option>
+                            <option value="lanche">Lanche/Alimentação</option>
+                            <option value="taxa-app">Taxa do App</option>
+                            <option value="seguro">Seguro</option>
+                            <option value="multa">Multa</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDescription">Descrição (opcional)</label>
+                        <input type="text" id="expenseDescription" placeholder="Descrição...">
+                    </div>
+                    <button type="submit" class="btn btn-submit btn-expense">Salvar Gasto</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="goalModal">
+            <div class="modal modal-small">
+                <div class="modal-header">
+                    <h3>Configurar Meta Diária</h3>
+                    <button class="modal-close" id="closeGoalModal">&times;</button>
+                </div>
+                <form id="goalForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="goalValue">Meta de Ganho Líquido Diário (R$)</label>
+                        <input type="number" id="goalValue" step="0.01" min="0" placeholder="200,00" required>
+                    </div>
+                    <button type="submit" class="btn btn-submit btn-goal">Salvar Meta</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="deleteModal">
+            <div class="modal modal-small">
+                <div class="modal-header">
+                    <h3>Confirmar Exclusão</h3>
+                    <button class="modal-close" id="closeDeleteModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir esta transação?</p>
+                    <div class="modal-actions">
+                        <button class="btn btn-cancel" id="cancelDelete">Cancelar</button>
+                        <button class="btn btn-delete" id="confirmDelete">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
