@@ -4,6 +4,7 @@ const ITEMS_PER_PAGE = 10;
 
 let transactions = [];
 let dailyGoalValue = 0;
+let appInitialized = false;
 let currentPage = 1;
 let deleteTargetId = null;
 let currentPeriod = 'week';
@@ -34,10 +35,12 @@ function initElements() {
     });
 }
 
-function init() {
+function init(cloudData = {}) {
+    if (appInitialized) return;
+    appInitialized = true;
     initElements();
-    loadTransactions();
-    loadGoal();
+    transactions = Array.isArray(cloudData.transactions) ? cloudData.transactions : [];
+    dailyGoalValue = Number(cloudData.dailyGoal) || 0;
     setupEventListeners();
     setDefaultDates();
     updateAllStats();
@@ -45,39 +48,31 @@ function init() {
     initCharts();
 }
 
-function loadTransactions() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        try {
-            transactions = JSON.parse(stored);
-        } catch (e) {
-            console.error('Erro ao carregar transações:', e);
-            transactions = [];
-        }
-    }
-}
-
-function loadGoal() {
-    const stored = localStorage.getItem(GOAL_KEY);
-    if (stored) {
-        try {
-            dailyGoalValue = parseFloat(stored) || 0;
-        } catch (e) {
-            dailyGoalValue = 0;
-        }
-    }
-}
-
 function saveTransactions() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    if (!window.ubercontrolAPI) return Promise.resolve(false);
+    return window.ubercontrolAPI('/api/transactions', {
+        method: 'PUT',
+        body: { transactions }
+    }).then(() => true).catch(error => {
+        showToast(error.message || 'Não foi possível sincronizar seus dados.', 'error');
+        return false;
+    });
 }
 
 function saveGoal() {
-    localStorage.setItem(GOAL_KEY, dailyGoalValue.toString());
+    if (!window.ubercontrolAPI) return Promise.resolve(false);
+    return window.ubercontrolAPI('/api/settings', {
+        method: 'PUT',
+        body: { dailyGoal: dailyGoalValue }
+    }).then(() => true).catch(error => {
+        showToast(error.message || 'Não foi possível salvar sua meta.', 'error');
+        return false;
+    });
 }
 
 function setDefaultDates() {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     if (elements.earningDate) elements.earningDate.value = today;
     if (elements.expenseDate) elements.expenseDate.value = today;
 }
@@ -109,6 +104,10 @@ function setupEventListeners() {
     elements.expenseForm?.addEventListener('submit', handleExpenseSubmit);
     elements.goalForm?.addEventListener('submit', handleGoalSubmit);
     elements.confirmDelete?.addEventListener('click', handleConfirmDelete);
+    elements.transactionsList?.addEventListener('click', (event) => {
+        const deleteButton = event.target.closest('[data-transaction-id]');
+        if (deleteButton) requestDelete(deleteButton.dataset.transactionId);
+    });
     
     elements.filterType?.addEventListener('change', () => {
         currentPage = 1;
@@ -187,7 +186,7 @@ function closeModal(modal) {
     }
 }
 
-function handleEarningSubmit(e) {
+async function handleEarningSubmit(e) {
     e.preventDefault();
     
     const value = parseFloat(document.getElementById('earningValue').value);
@@ -217,7 +216,10 @@ function handleEarningSubmit(e) {
     };
     
     transactions.push(transaction);
-    saveTransactions();
+    if (!await saveTransactions()) {
+        transactions.pop();
+        return;
+    }
     updateAllStats();
     renderTransactions();
     updateCharts();
@@ -228,7 +230,7 @@ function handleEarningSubmit(e) {
     showToast('Ganho registrado com sucesso!', 'success');
 }
 
-function handleExpenseSubmit(e) {
+async function handleExpenseSubmit(e) {
     e.preventDefault();
     
     const value = parseFloat(document.getElementById('expenseValue').value);
@@ -254,7 +256,10 @@ function handleExpenseSubmit(e) {
     };
     
     transactions.push(transaction);
-    saveTransactions();
+    if (!await saveTransactions()) {
+        transactions.pop();
+        return;
+    }
     updateAllStats();
     renderTransactions();
     updateCharts();
@@ -265,7 +270,7 @@ function handleExpenseSubmit(e) {
     showToast('Gasto registrado com sucesso!', 'success');
 }
 
-function handleGoalSubmit(e) {
+async function handleGoalSubmit(e) {
     e.preventDefault();
     
     const value = parseFloat(document.getElementById('goalValue').value);
@@ -275,17 +280,26 @@ function handleGoalSubmit(e) {
         return;
     }
     
+    const previousGoal = dailyGoalValue;
     dailyGoalValue = value;
-    saveGoal();
+    if (!await saveGoal()) {
+        dailyGoalValue = previousGoal;
+        return;
+    }
     updateAllStats();
     closeModal(elements.goalModal);
     showToast('Meta atualizada!', 'success');
 }
 
-function handleConfirmDelete() {
+async function handleConfirmDelete() {
     if (deleteTargetId) {
+        const previousTransactions = transactions;
         transactions = transactions.filter(t => t.id !== deleteTargetId);
-        saveTransactions();
+        if (!await saveTransactions()) {
+            transactions = previousTransactions;
+            closeModal(elements.deleteModal);
+            return;
+        }
         updateAllStats();
         renderTransactions();
         updateCharts();
@@ -361,19 +375,23 @@ function getCategoryIcon(category) {
 }
 
 function getTodayString() {
-    return new Date().toISOString().split('T')[0];
+    return toLocalDateKey(new Date());
 }
 
 function getWeekStart() {
     const now = new Date();
     const day = now.getDay();
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(now.setDate(diff)).toISOString().split('T')[0];
+    return toLocalDateKey(new Date(now.setDate(diff)));
 }
 
 function getMonthStart() {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    return toLocalDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+}
+
+function toLocalDateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function updateAllStats() {
@@ -572,18 +590,18 @@ function renderTransactions() {
     
     elements.transactionsList.innerHTML = pageItems.map(t => `
         <div class="transaction-item">
-            <div class="transaction-icon ${t.type}">
-                ${getCategoryIcon(t.category)}
+            <div class="transaction-icon ${escapeHTML(t.type)}">
+                ${escapeHTML(getCategoryIcon(t.category))}
             </div>
             <div class="transaction-info">
-                <div class="transaction-category">${getCategoryLabel(t.category)}</div>
-                <div class="transaction-date">${formatFullDate(t.date)}${t.description ? ' • ' + t.description : ''}</div>
+                <div class="transaction-category">${escapeHTML(getCategoryLabel(t.category))}</div>
+                <div class="transaction-date">${escapeHTML(formatFullDate(t.date))}${t.description ? ' • ' + escapeHTML(t.description) : ''}</div>
             </div>
             <div class="transaction-value ${t.type}">
                 ${t.type === 'earning' ? '+' : '-'}${formatCurrency(t.value)}
             </div>
             <div class="transaction-actions">
-                <button class="btn-delete-item" onclick="requestDelete('${t.id}')" title="Excluir">
+                <button class="btn-delete-item" data-transaction-id="${escapeHTML(t.id)}" title="Excluir">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -596,6 +614,16 @@ function renderTransactions() {
     if (elements.prevPage) elements.prevPage.disabled = currentPage === 1;
     if (elements.nextPage) elements.nextPage.disabled = currentPage === totalPages;
     if (elements.pageInfo) elements.pageInfo.textContent = `${currentPage} / ${totalPages}`;
+}
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
 }
 
 function requestDelete(id) {
@@ -833,7 +861,7 @@ function exportData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ubercontrol_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `ubercontrol_backup_${getTodayString()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -848,18 +876,28 @@ function importData(e) {
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
         try {
             const data = JSON.parse(event.target.result);
-            
+            const previousTransactions = transactions;
+            const previousGoal = dailyGoalValue;
             if (data.transactions && Array.isArray(data.transactions)) {
                 transactions = data.transactions;
-                saveTransactions();
             }
             
             if (data.goal !== undefined) {
                 dailyGoalValue = parseFloat(data.goal) || 0;
-                saveGoal();
+            }
+
+            const savedTransactions = await saveTransactions();
+            const savedGoal = data.goal === undefined || await saveGoal();
+            if (!savedTransactions || !savedGoal) {
+                transactions = previousTransactions;
+                dailyGoalValue = previousGoal;
+                updateAllStats();
+                renderTransactions();
+                updateCharts();
+                return;
             }
             
             updateAllStats();
@@ -876,12 +914,21 @@ function importData(e) {
     e.target.value = '';
 }
 
-function clearAllData() {
+async function clearAllData() {
     if (confirm('Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.')) {
+        const previousTransactions = transactions;
+        const previousGoal = dailyGoalValue;
         transactions = [];
         dailyGoalValue = 0;
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(GOAL_KEY);
+        const [savedTransactions, savedGoal] = await Promise.all([saveTransactions(), saveGoal()]);
+        if (!savedTransactions || !savedGoal) {
+            transactions = previousTransactions;
+            dailyGoalValue = previousGoal;
+            updateAllStats();
+            renderTransactions();
+            updateCharts();
+            return;
+        }
         
         updateAllStats();
         renderTransactions();
@@ -911,5 +958,4 @@ function showToast(message, type = 'success') {
 }
 
 window.requestDelete = requestDelete;
-
-document.addEventListener('DOMContentLoaded', init);
+window.initUberControl = init;

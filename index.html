@@ -2,34 +2,124 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="theme-color" content="#0f0f1a">
+    <meta name="theme-color" content="#f4f5f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>UberControl - Controle Financeiro para Motoristas</title>
+    <meta name="description" content="Saiba quanto sobra de cada corrida. Controle ganhos, custos e rentabilidade em um só lugar.">
+    <title>UberControl — gestão financeira para motoristas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/vendor/chart.js"></script>
 </head>
 <body>
-    <div class="app">
+    <section id="accessScreen" class="access-screen">
+        <div class="access-shell">
+            <header class="access-header">
+                <a class="brand-lockup" href="/" aria-label="UberControl início">
+                    <span class="brand-mark" aria-hidden="true">U</span>
+                    <span>UberControl</span>
+                </a>
+                <span class="access-header-note">Gestão financeira para quem dirige</span>
+            </header>
+
+            <div class="access-layout">
+                <div class="access-story">
+                    <p class="eyebrow"><span class="status-dot"></span> Seu trabalho, seus números</p>
+                    <h1>Dirija com clareza.<br><span>Feche o dia sabendo quanto ficou.</span></h1>
+                    <p class="access-intro">Organize ganhos, despesas e horas trabalhadas em um só lugar. Veja o que rende, o que custa e quanto sobra de verdade.</p>
+                    <div class="proof-list">
+                        <div><span class="proof-check">✓</span><span>Resultado líquido por dia, semana e mês</span></div>
+                        <div><span class="proof-check">✓</span><span>Custos, quilômetros e ganho por hora</span></div>
+                        <div><span class="proof-check">✓</span><span>Seus registros sincronizados com segurança</span></div>
+                    </div>
+                    <div class="privacy-note">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.7-3 8.2-7 10-4-1.8-7-5.3-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span>Dados privados da sua conta. Só você acessa suas informações.</span>
+                    </div>
+                </div>
+
+                <div class="access-card">
+                    <div id="authPanel">
+                        <div class="auth-heading">
+                            <p class="eyebrow">Acesso à sua conta</p>
+                            <h2 id="authTitle">Bem-vindo de volta</h2>
+                            <p id="authDescription">Entre para acompanhar sua operação.</p>
+                        </div>
+                        <div class="auth-tabs" role="tablist" aria-label="Acesso">
+                            <button class="auth-tab active" type="button" data-auth-mode="login">Entrar</button>
+                            <button class="auth-tab" type="button" data-auth-mode="signup">Criar conta</button>
+                        </div>
+                        <form id="authForm" class="auth-form">
+                            <label for="authEmail">E-mail</label>
+                            <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+                            <label for="authPassword">Senha</label>
+                            <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="Mínimo de 8 caracteres" required>
+                            <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+                            <button id="authSubmit" class="primary-button auth-submit" type="submit">Entrar na conta <span aria-hidden="true">→</span></button>
+                            <button id="resetPasswordButton" class="text-button reset-password" type="button">Esqueci minha senha</button>
+                        </form>
+                        <div class="access-price"><strong>R$ 19,90</strong><span>por mês, sem fidelidade</span></div>
+                    </div>
+
+                    <div id="recoveryPanel" class="hidden">
+                        <div class="auth-heading">
+                            <p class="eyebrow">Recuperação de acesso</p>
+                            <h2>Defina uma nova senha</h2>
+                            <p>Escolha uma senha com pelo menos 8 caracteres.</p>
+                        </div>
+                        <form id="newPasswordForm" class="auth-form">
+                            <label for="newPassword">Nova senha</label>
+                            <input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" required>
+                            <p id="recoveryMessage" class="auth-message" role="status" aria-live="polite"></p>
+                            <button id="saveNewPasswordButton" class="primary-button auth-submit" type="submit">Salvar nova senha</button>
+                        </form>
+                    </div>
+
+                    <div id="subscriptionPanel" class="subscription-panel hidden">
+                        <div class="account-avatar" aria-hidden="true">U</div>
+                        <p class="eyebrow">Sua conta está pronta</p>
+                        <h2>Tenha seus números sempre à mão.</h2>
+                        <p class="subscription-copy">Assine o UberControl Pro para liberar o painel, relatórios e histórico sincronizado.</p>
+                        <div class="subscription-price"><strong>R$ 19,90</strong><span>/ mês</span></div>
+                        <button id="checkoutButton" class="primary-button auth-submit" type="button">Assinar com segurança <span aria-hidden="true">→</span></button>
+                        <button id="verifyAccessButton" class="text-button" type="button">Já assinei — verificar acesso</button>
+                        <p id="subscriptionMessage" class="auth-message" role="status" aria-live="polite"></p>
+                        <div class="subscription-footnote">Pagamento processado pelo Whop. A confirmação é validada pelo servidor.</div>
+                        <button id="signOutButton" class="text-button signout-link" type="button">Sair da conta</button>
+                    </div>
+                </div>
+            </div>
+            <footer class="access-footer"><span>UberControl</span><span>Controle financeiro para motoristas de aplicativo</span></footer>
+        </div>
+    </section>
+
+    <div class="app hidden" id="dashboardApp">
         <header class="app-header">
             <div class="header-content">
                 <div class="logo-section">
-                    <span class="logo-icon">🚗</span>
+                    <span class="logo-icon" aria-hidden="true">U</span>
                     <div class="logo-text">
                         <h1>UberControl</h1>
-                        <span class="tagline">Seu dinheiro sob controle</span>
+                        <span class="tagline">Gestão financeira</span>
                     </div>
                 </div>
+                <div class="header-actions">
+                    <span id="accountEmail" class="account-email"></span>
+                    <button id="btnSignOut" class="btn-signout" type="button">Sair</button>
+                    <button id="btnManageSubscription" class="btn-manage-subscription hidden" type="button">Assinatura</button>
                 <button class="btn-settings" id="btnSettings" title="Configurações">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
                 </button>
+                </div>
             </div>
         </header>
 
@@ -598,6 +688,8 @@
         <span class="toast-message"></span>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/vendor/supabase.js"></script>
+    <script src="/script.js"></script>
+    <script src="/auth.js" defer></script>
 </body>
 </html>
