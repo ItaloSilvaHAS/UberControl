@@ -16,8 +16,30 @@ const ACCESS_CACHE_MS = 15_000;
 
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: "1mb" }));
+const connectSources = ["'self'"];
+try {
+  connectSources.push(new URL(process.env.SUPABASE_URL).origin);
+} catch {
+  // The app can still serve its setup screen before Supabase is configured.
+}
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"],
+      formAction: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrcAttr: ["'unsafe-inline'"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: connectSources,
+    },
+  },
+}));
+app.use(express.json({ limit: "5mb" }));
 app.use("/api", rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 120,
@@ -52,22 +74,40 @@ function requireBillingConfig() {
   return { companyId, planId };
 }
 
+function appReturnUrl(req) {
+  const configuredHosts = [
+    process.env.REPLIT_DEV_DOMAIN || "",
+    process.env.REPLIT_DOMAINS || "",
+  ].flatMap((entry) => entry.split(","))
+    .map((entry) => {
+      try {
+        return new URL(entry.includes("://") ? entry : `https://${entry.trim()}`).hostname.toLowerCase();
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean);
+  const host = String(req.hostname || "").toLowerCase();
+  if (!host || !configuredHosts.includes(host)) return undefined;
+  return `${req.protocol}://${host}/?billing=return`;
+}
+
 async function getUser(req) {
   const authorization = req.get("authorization") || "";
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) {
-    const error = new Error("Authentication required.");
+    const error = new Error("Entre na sua conta para continuar.");
     error.status = 401;
     throw error;
   }
   const { data, error } = await getSupabaseAdmin().auth.getUser(match[1]);
   if (error || !data?.user) {
-    const invalid = new Error("Your session has expired. Sign in again.");
+    const invalid = new Error("Sua sessão expirou. Entre novamente.");
     invalid.status = 401;
     throw invalid;
   }
   if (!data.user.email_confirmed_at) {
-    const unverified = new Error("Confirm your email before continuing.");
+    const unverified = new Error("Confirme seu e-mail antes de continuar.");
     unverified.status = 403;
     throw unverified;
   }
@@ -169,10 +209,29 @@ app.get("/api/health", (_req, res) => {
 app.get("/api/billing/status", async (req, res) => {
   try {
     const user = await getUser(req);
-    const membership = await findMembership(user.id, true);
+    let membership;
+    try {
+      membership = await findMembership(user.id, true);
+    } catch {
+      const error = new Error("Não foi possível confirmar sua assinatura agora. Tente novamente em instantes.");
+      error.status = 503;
+      throw error;
+    }
+    const manageUrl = membership?.manage_url;
+    const safeManageUrl = manageUrl && (() => {
+      try {
+        const url = new URL(manageUrl);
+        return url.protocol === "https:" &&
+          (url.hostname === "whop.com" || url.hostname.endsWith(".whop.com"))
+          ? url.toString()
+          : null;
+      } catch {
+        return null;
+      }
+    })();
     res.json({
       active: Boolean(membership),
-      manageUrl: membership?.manage_url || null,
+      manageUrl: safeManageUrl || null,
     });
   } catch (error) {
     sendError(res, error);
@@ -193,10 +252,12 @@ app.post("/api/billing/checkout", rateLimit({
     }
     const { companyId, planId } = requireBillingConfig();
     const whop = await getWhopClient();
+    const redirectUrl = appReturnUrl(req);
     const checkout = await whop.checkoutConfigurations.create({
       account_id: companyId,
       plan_id: planId,
       metadata: { ubercontrol_supabase_user_id: user.id },
+      ...(redirectUrl ? { redirect_url: redirectUrl } : {}),
     });
     const purchaseUrl = checkout?.purchase_url;
     const parsed = purchaseUrl ? new URL(purchaseUrl) : null;
@@ -254,6 +315,26 @@ app.put("/api/transactions", async (req, res) => {
   }
 });
 
+app.put("/api/data", async (req, res) => {
+  try {
+    const { user } = await requirePaidUser(req);
+    const normalized = normalizeTransactionBatch(req.body?.transactions);
+    const dailyGoal = Number(req.body?.dailyGoal);
+    if (!Number.isFinite(dailyGoal) || dailyGoal < 0 || dailyGoal > 1_000_000_000) {
+      return res.status(400).json({ error: "Informe uma meta diária válida." });
+    }
+    const { error } = await getSupabaseAdmin().rpc("replace_driver_data", {
+      p_user_id: user.id,
+      p_transactions: normalized,
+      p_daily_goal: dailyGoal,
+    });
+    if (error) throw new Error("Account data save failed.");
+    res.json({ transactionsSaved: normalized.length, dailyGoal });
+  } catch (error) {
+    sendError(res, error);
+  }
+});
+
 app.get("/api/settings", async (req, res) => {
   try {
     const { user } = await requirePaidUser(req);
@@ -287,7 +368,7 @@ app.get("/vendor/chart.js", (_req, res) => {
   res.sendFile(path.join(ROOT, "node_modules/chart.js/dist/chart.umd.js"));
 });
 
-for (const file of ["index.html", "style.css", "script.js", "auth.js"]) {
+for (const file of ["index.html", "style.css", "script.js", "auth.js", "favicon.svg"]) {
   app.get(file === "index.html" ? "/" : `/${file}`, (_req, res) => {
     res.set("Cache-Control", "no-store");
     res.sendFile(path.join(ROOT, file));

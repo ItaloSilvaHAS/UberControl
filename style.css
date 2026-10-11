@@ -1572,6 +1572,13 @@ button, input, select, textarea {
     font-size: 12px;
 }
 
+.tax-note {
+    margin: 7px 0 0;
+    color: #879188;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
 .subscription-panel {
     text-align: left;
 }
@@ -1787,6 +1794,23 @@ button, input, select, textarea {
 
 .fab-expense:hover {
     background: #f3f6f3;
+}
+
+.transaction-icon {
+    font-size: 0 !important;
+    background: #eaf1eb !important;
+}
+
+.transaction-icon::before {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #397a57;
+    content: "";
+}
+
+.transaction-icon.expense::before {
+    background: #b95d53;
 }
 
 .modal {

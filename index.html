@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Saiba quanto sobra de cada corrida. Controle ganhos, custos e rentabilidade em um só lugar.">
     <title>UberControl — gestão financeira para motoristas</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -57,14 +58,15 @@
                         </div>
                         <form id="authForm" class="auth-form">
                             <label for="authEmail">E-mail</label>
-                            <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+                            <input id="authEmail" name="username" type="email" autocomplete="username" placeholder="voce@email.com" required>
                             <label for="authPassword">Senha</label>
                             <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="Mínimo de 8 caracteres" required>
                             <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
                             <button id="authSubmit" class="primary-button auth-submit" type="submit">Entrar na conta <span aria-hidden="true">→</span></button>
                             <button id="resetPasswordButton" class="text-button reset-password" type="button">Esqueci minha senha</button>
                         </form>
-                        <div class="access-price"><strong>R$ 19,90</strong><span>por mês, sem fidelidade</span></div>
+                        <div class="access-price"><strong>R$ 19,90</strong><span>por mês</span></div>
+                        <p class="tax-note">Tributos aplicáveis podem alterar o total exibido no checkout.</p>
                     </div>
 
                     <div id="recoveryPanel" class="hidden">
@@ -74,6 +76,7 @@
                             <p>Escolha uma senha com pelo menos 8 caracteres.</p>
                         </div>
                         <form id="newPasswordForm" class="auth-form">
+                            <input type="hidden" name="username" autocomplete="username">
                             <label for="newPassword">Nova senha</label>
                             <input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" required>
                             <p id="recoveryMessage" class="auth-message" role="status" aria-live="polite"></p>
@@ -90,7 +93,7 @@
                         <button id="checkoutButton" class="primary-button auth-submit" type="button">Assinar com segurança <span aria-hidden="true">→</span></button>
                         <button id="verifyAccessButton" class="text-button" type="button">Já assinei — verificar acesso</button>
                         <p id="subscriptionMessage" class="auth-message" role="status" aria-live="polite"></p>
-                        <div class="subscription-footnote">Pagamento processado pelo Whop. A confirmação é validada pelo servidor.</div>
+                        <div class="subscription-footnote">Pagamento processado pelo Whop. Tributos aplicáveis podem alterar o total exibido no checkout.</div>
                         <button id="signOutButton" class="text-button signout-link" type="button">Sair da conta</button>
                     </div>
                 </div>
@@ -106,7 +109,7 @@
                     <span class="logo-icon" aria-hidden="true">U</span>
                     <div class="logo-text">
                         <h1>UberControl</h1>
-                        <span class="tagline">Dinheiro sob controle</span>
+                        <span class="tagline">Gestão financeira</span>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -202,7 +205,7 @@
                             <span class="summary-icon">⛽</span>
                             <div class="summary-data">
                                 <span class="summary-value" id="kmPerReal">0 km</span>
-                                <span class="summary-label">Por Real Gasto</span>
+                                <span class="summary-label">Despesas por km</span>
                             </div>
                         </div>
                     </div>

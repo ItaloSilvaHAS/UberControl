@@ -1,5 +1,3 @@
-const STORAGE_KEY = 'ubercontrol_transactions';
-const GOAL_KEY = 'ubercontrol_goal';
 const ITEMS_PER_PAGE = 10;
 
 let transactions = [];
@@ -66,6 +64,17 @@ function saveGoal() {
         body: { dailyGoal: dailyGoalValue }
     }).then(() => true).catch(error => {
         showToast(error.message || 'Não foi possível salvar sua meta.', 'error');
+        return false;
+    });
+}
+
+function saveAllData() {
+    if (!window.ubercontrolAPI) return Promise.resolve(false);
+    return window.ubercontrolAPI('/api/data', {
+        method: 'PUT',
+        body: { transactions, dailyGoal: dailyGoalValue }
+    }).then(() => true).catch(error => {
+        showToast(error.message || 'Não foi possível salvar seus dados.', 'error');
         return false;
     });
 }
@@ -197,7 +206,7 @@ async function handleEarningSubmit(e) {
     const hours = parseFloat(document.getElementById('earningHours')?.value) || 0;
     const description = document.getElementById('earningDescription')?.value || '';
     
-    if (!value || !date || !categoryInput) {
+    if (!Number.isFinite(value) || value <= 0 || !date || !categoryInput) {
         showToast('Preencha todos os campos obrigatórios', 'error');
         return;
     }
@@ -238,7 +247,7 @@ async function handleExpenseSubmit(e) {
     const categoryInput = document.querySelector('input[name="expenseCategory"]:checked');
     const description = document.getElementById('expenseDescription')?.value || '';
     
-    if (!value || !date || !categoryInput) {
+    if (!Number.isFinite(value) || value <= 0 || !date || !categoryInput) {
         showToast('Preencha todos os campos obrigatórios', 'error');
         return;
     }
@@ -275,7 +284,7 @@ async function handleGoalSubmit(e) {
     
     const value = parseFloat(document.getElementById('goalValue').value);
     
-    if (!value || value < 0) {
+    if (!Number.isFinite(value) || value < 0) {
         showToast('Insira um valor válido para a meta', 'error');
         return;
     }
@@ -443,7 +452,7 @@ function updateGoalProgress() {
         const remaining = dailyGoalValue - todayNet;
         if (elements.goalStatus) {
             if (remaining <= 0) {
-                elements.goalStatus.textContent = '🎉 Meta atingida! Parabéns!';
+                elements.goalStatus.textContent = 'Meta atingida. Bom trabalho.';
                 elements.goalStatus.classList.add('achieved');
             } else {
                 elements.goalStatus.textContent = `Faltam ${formatCurrency(remaining)} para atingir a meta`;
@@ -483,12 +492,12 @@ function updateWorkSummary() {
     
     const netToday = earningsToday - expensesToday;
     const hourlyRate = hoursToday > 0 ? netToday / hoursToday : 0;
-    const kmPerReal = expensesToday > 0 ? kmToday / expensesToday : 0;
+    const expensePerKm = kmToday > 0 ? expensesToday / kmToday : null;
     
     if (elements.hoursWorked) elements.hoursWorked.textContent = `${hoursToday.toFixed(1)}h`;
     if (elements.hourlyRate) elements.hourlyRate.textContent = formatCurrency(hourlyRate);
     if (elements.totalKmToday) elements.totalKmToday.textContent = `${kmToday.toFixed(1)} km`;
-    if (elements.kmPerReal) elements.kmPerReal.textContent = `${kmPerReal.toFixed(1)} km`;
+    if (elements.kmPerReal) elements.kmPerReal.textContent = expensePerKm === null ? '—' : `${formatCurrency(expensePerKm)} / km`;
 }
 
 function updatePeriodStats() {
@@ -639,7 +648,7 @@ function initCharts() {
             legend: {
                 position: 'bottom',
                 labels: {
-                    color: '#a0a0c0',
+                    color: '#68766c',
                     padding: 15,
                     font: { size: 11 }
                 }
@@ -655,7 +664,7 @@ function initCharts() {
                 labels: [],
                 datasets: [{
                     data: [],
-                    backgroundColor: ['#000000', '#06C167', '#FFCC00', '#2FC54B', '#74b9ff', '#a0a0c0'],
+                    backgroundColor: ['#263c30', '#3b7a59', '#71987d', '#abc0af', '#5f8090', '#c0a574'],
                     borderWidth: 0
                 }]
             },
@@ -674,7 +683,7 @@ function initCharts() {
                 labels: [],
                 datasets: [{
                     data: [],
-                    backgroundColor: ['#ff7675', '#fdcb6e', '#74b9ff', '#a29bfe', '#00cec9', '#e056fd', '#fab1a0', '#81ecec'],
+                    backgroundColor: ['#b45b50', '#c58a48', '#5f8090', '#777c9a', '#4c8873', '#8b687f', '#c47d65', '#73928a'],
                     borderWidth: 0
                 }]
             },
@@ -695,8 +704,8 @@ function initCharts() {
                     {
                         label: 'Líquido',
                         data: [],
-                        borderColor: '#6c5ce7',
-                        backgroundColor: 'rgba(108, 92, 231, 0.1)',
+                        borderColor: '#286c4d',
+                        backgroundColor: 'rgba(40, 108, 77, 0.12)',
                         fill: true,
                         tension: 0.4
                     }
@@ -706,12 +715,12 @@ function initCharts() {
                 ...chartOptions,
                 scales: {
                     x: {
-                        grid: { color: 'rgba(160, 160, 192, 0.1)' },
-                        ticks: { color: '#a0a0c0' }
+                        grid: { color: 'rgba(54, 82, 62, 0.08)' },
+                        ticks: { color: '#748078' }
                     },
                     y: {
-                        grid: { color: 'rgba(160, 160, 192, 0.1)' },
-                        ticks: { color: '#a0a0c0' }
+                        grid: { color: 'rgba(54, 82, 62, 0.08)' },
+                        ticks: { color: '#748078' }
                     }
                 }
             }
@@ -727,7 +736,7 @@ function initCharts() {
                 datasets: [{
                     label: 'Média de Ganho',
                     data: [0, 0, 0, 0, 0, 0, 0],
-                    backgroundColor: 'rgba(0, 206, 201, 0.6)',
+                        backgroundColor: 'rgba(58, 125, 88, 0.7)',
                     borderRadius: 8
                 }]
             },
@@ -736,11 +745,11 @@ function initCharts() {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#a0a0c0' }
+                        ticks: { color: '#748078' }
                     },
                     y: {
-                        grid: { color: 'rgba(160, 160, 192, 0.1)' },
-                        ticks: { color: '#a0a0c0' }
+                        grid: { color: 'rgba(54, 82, 62, 0.08)' },
+                        ticks: { color: '#748078' }
                     }
                 }
             }
@@ -804,7 +813,7 @@ function updateWeeklyChart() {
     for (let i = 6; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
-        last7Days.push(date.toISOString().split('T')[0]);
+        last7Days.push(toLocalDateKey(date));
     }
     
     const netByDay = last7Days.map(date => {
@@ -819,7 +828,7 @@ function updateWeeklyChart() {
     });
     
     const labels = last7Days.map(date => {
-        const d = new Date(date + 'T00:00:00');
+        const d = new Date(date + 'T12:00:00');
         return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' });
     });
     
@@ -836,7 +845,7 @@ function updateWeekdayChart() {
     transactions
         .filter(t => t.type === 'earning')
         .forEach(t => {
-            const date = new Date(t.date + 'T00:00:00');
+            const date = new Date(t.date + 'T12:00:00');
             const weekday = date.getDay();
             earningsByWeekday[weekday].push(t.value);
         });
@@ -874,6 +883,12 @@ function exportData() {
 function importData(e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > 4 * 1024 * 1024) {
+        showToast('O arquivo precisa ter no máximo 4 MB.', 'error');
+        e.target.value = '';
+        return;
+    }
     
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -881,17 +896,19 @@ function importData(e) {
             const data = JSON.parse(event.target.result);
             const previousTransactions = transactions;
             const previousGoal = dailyGoalValue;
+            if (data.goal !== undefined) {
+                const importedGoal = Number(data.goal);
+                if (!Number.isFinite(importedGoal) || importedGoal < 0 || importedGoal > 1_000_000_000) {
+                    throw new Error('Meta inválida no arquivo de backup.');
+                }
+                dailyGoalValue = importedGoal;
+            }
             if (data.transactions && Array.isArray(data.transactions)) {
                 transactions = data.transactions;
             }
-            
-            if (data.goal !== undefined) {
-                dailyGoalValue = parseFloat(data.goal) || 0;
-            }
 
-            const savedTransactions = await saveTransactions();
-            const savedGoal = data.goal === undefined || await saveGoal();
-            if (!savedTransactions || !savedGoal) {
+            const saved = await saveAllData();
+            if (!saved) {
                 transactions = previousTransactions;
                 dailyGoalValue = previousGoal;
                 updateAllStats();
@@ -920,8 +937,8 @@ async function clearAllData() {
         const previousGoal = dailyGoalValue;
         transactions = [];
         dailyGoalValue = 0;
-        const [savedTransactions, savedGoal] = await Promise.all([saveTransactions(), saveGoal()]);
-        if (!savedTransactions || !savedGoal) {
+        const saved = await saveAllData();
+        if (!saved) {
             transactions = previousTransactions;
             dailyGoalValue = previousGoal;
             updateAllStats();

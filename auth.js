@@ -96,6 +96,14 @@
     if (!response.ok) {
       const error = new Error(result.error || "Não foi possível concluir a solicitação.");
       error.status = response.status;
+      if (response.status === 401) {
+        await authClient.auth.signOut();
+        showAuth("Sua sessão expirou. Entre novamente.", "error");
+      }
+      if (response.status === 402) {
+        const { data: { user } } = await authClient.auth.getUser();
+        showPaywall(user, "A assinatura não está ativa. Regularize a cobrança para continuar.", "error");
+      }
       throw error;
     }
     return result;
@@ -179,7 +187,7 @@
     event.preventDefault();
     if (!authClient) return;
     const form = new FormData(authForm);
-    const email = String(form.get("email") || "").trim().toLowerCase();
+    const email = String(form.get("username") || "").trim().toLowerCase();
     const password = String(form.get("password") || "");
     setBusy(authSubmit, true, authMode === "signup" ? "Criando conta…" : "Entrando…");
     setMessage(authMessage);
@@ -211,7 +219,8 @@
 
   async function startCheckout() {
     if (!authClient || !checkoutButton) return;
-    const checkoutWindow = window.open("about:blank", "_blank", "noopener,noreferrer");
+    const checkoutWindow = window.open("about:blank", "_blank");
+    if (checkoutWindow) checkoutWindow.opener = null;
     setBusy(checkoutButton, true, "Preparando checkout…");
     setMessage(subscriptionMessage);
     try {
